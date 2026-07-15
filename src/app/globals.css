@@ -1,0 +1,133 @@
+/* ハッケンバス — UIモックv3のワイヤーフレームを移植したベーススタイル */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  background: #eceff1;
+  height: 100%;
+}
+button { font-family: inherit; cursor: pointer; }
+
+.phone {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* アプリバー */
+.appbar { padding: 12px 14px; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+.appbar .loc { font-size: 14px; font-weight: bold; }
+.appbar .loc small { display: block; font-weight: normal; font-size: 11px; color: #888; }
+.gear { width: 28px; height: 28px; border-radius: 50%; background: #eceff1; border: none; text-align: center; line-height: 28px; font-size: 14px; }
+
+.main { flex: 1; padding: 12px 14px 80px; }
+.center { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 24px; text-align: center; }
+
+/* S0 ログイン */
+.logo { width: 80px; height: 80px; border-radius: 18px; background: #ffc53d; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-bottom: 16px; }
+.tagline { font-size: 15px; color: #333; margin-bottom: 8px; font-weight: bold; line-height: 1.6; }
+.sub { font-size: 12px; color: #888; margin-bottom: 28px; }
+.gbtn { width: 100%; max-width: 320px; padding: 14px; border: 1px solid #bdbdbd; border-radius: 24px; background: #fff; font-size: 14px; font-weight: bold; }
+
+/* S1 初期設定 */
+.stepnum { font-size: 11px; color: #888; margin-bottom: 12px; }
+.permit-icon { width: 60px; height: 60px; border-radius: 50%; background: #eceff1; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+.why { font-size: 12px; color: #555; line-height: 1.7; margin-bottom: 20px; }
+.primary { width: 100%; max-width: 320px; padding: 14px; border: none; border-radius: 24px; background: #ffc53d; font-size: 14px; font-weight: bold; }
+.ghost { width: 100%; padding: 10px; border: none; background: none; font-size: 12px; color: #888; margin-top: 10px; }
+.preset { width: 100%; max-width: 340px; border: 2px solid #e0e0e0; border-radius: 12px; padding: 14px; margin-bottom: 10px; text-align: left; background: #fff; }
+.preset.sel { border-color: #ffc53d; background: #fff8e1; }
+.preset b { font-size: 14px; }
+.preset span { display: block; font-size: 11px; color: #777; margin-top: 4px; }
+
+/* チップ */
+.chips { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { font-size: 12px; padding: 7px 12px; border-radius: 16px; background: #eceff1; color: #555; white-space: nowrap; border: none; flex-shrink: 0; }
+.chip.on { background: #263238; color: #fff; }
+.chip.custom { background: #00695c; color: #fff; }
+.chip.adjust { background: #fff; border: 1px dashed #999; }
+
+/* カード */
+.card { border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: #fff; }
+.card-link { text-decoration: none; color: inherit; display: block; }
+.photo { height: 120px; background: repeating-linear-gradient(45deg, #cfd8dc, #cfd8dc 8px, #eceff1 8px, #eceff1 16px); display: flex; align-items: center; justify-content: center; color: #78909c; font-size: 11px; object-fit: cover; width: 100%; }
+img.photo { object-fit: cover; }
+.cbody { padding: 10px 12px; }
+.cname { font-size: 15px; font-weight: bold; }
+.ccat { font-size: 11px; color: #888; margin: 3px 0 8px; }
+.raku { display: inline-block; font-size: 12px; font-weight: bold; background: #fff3cd; border-radius: 6px; padding: 4px 10px; }
+.raku-note { font-size: 10px; color: #999; margin-top: 4px; }
+
+/* 下部タブ */
+.tabs { display: flex; border-top: 1px solid #e0e0e0; position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #fff; z-index: 20; }
+.tab { flex: 1; text-align: center; padding: 11px 0 13px; font-size: 12px; color: #999; border: none; background: none; text-decoration: none; position: relative; }
+.tab.on { color: #263238; font-weight: bold; border-top: 2px solid #ffc53d; }
+.dot { display: inline-block; min-width: 16px; height: 16px; line-height: 16px; border-radius: 8px; background: #e53935; color: #fff; font-size: 10px; font-weight: bold; margin-left: 4px; }
+
+/* S3 店詳細 */
+.detail-photo { height: 180px; }
+.thumbs { display: flex; gap: 4px; padding: 4px 14px 0; }
+.thumbs div, .thumbs img { width: 56px; height: 40px; background: #eceff1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #999; object-fit: cover; }
+.dname { font-size: 18px; font-weight: bold; margin-top: 10px; }
+.dmeta { font-size: 12px; color: #888; margin: 4px 0 12px; }
+.open { color: #00695c; font-weight: bold; }
+.rakubox { border: 2px solid #ffc53d; border-radius: 12px; padding: 12px; background: #fffdf5; }
+.rakubox h4 { font-size: 12px; margin-bottom: 14px; }
+.steps { display: flex; align-items: center; justify-content: space-between; font-size: 10px; text-align: center; color: #333; }
+.steps .node { width: 40px; }
+.steps .node .ico { font-size: 18px; }
+.steps .leg { flex: 1; border-top: 2px dotted #999; position: relative; margin: 0 2px; }
+.steps .leg span { position: absolute; top: -18px; left: 50%; transform: translate(-50%); font-size: 10px; font-weight: bold; white-space: nowrap; }
+.busline { font-size: 11px; color: #333; background: #eceff1; border-radius: 6px; padding: 6px 10px; margin-top: 10px; }
+.total { text-align: right; font-size: 13px; font-weight: bold; margin-top: 8px; }
+.total small { font-weight: normal; color: #999; display: block; font-size: 10px; }
+.info { font-size: 12px; color: #555; margin-top: 12px; line-height: 1.8; }
+.actionbar { display: flex; gap: 8px; padding: 12px 14px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid #e0e0e0; position: sticky; bottom: 0; background: #fff; }
+.fav { flex: 1; padding: 13px; border: 1px solid #bdbdbd; border-radius: 24px; background: #fff; font-size: 13px; }
+.fav.on { border-color: #e53935; color: #e53935; }
+.go { flex: 2; padding: 13px; border: none; border-radius: 24px; background: #ffc53d; font-size: 14px; font-weight: bold; }
+
+/* ボトムシート */
+.dim { position: fixed; inset: 0; background: rgba(38, 50, 56, 0.5); display: flex; flex-direction: column; justify-content: flex-end; z-index: 30; }
+.sheet { background: #fff; border-radius: 16px 16px 0 0; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); max-width: 480px; margin: 0 auto; width: 100%; }
+.sheet h4 { font-size: 15px; margin-bottom: 6px; }
+.sheet p { font-size: 12px; color: #777; margin-bottom: 14px; }
+
+/* S4 マイリスト */
+.seg { display: flex; background: #eceff1; border-radius: 18px; padding: 3px; margin-bottom: 12px; }
+.seg button { flex: 1; text-align: center; font-size: 12px; padding: 8px 0; border-radius: 15px; color: #777; border: none; background: none; }
+.seg button.on { background: #fff; color: #263238; font-weight: bold; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); }
+.arrived-btn { width: 100%; margin-top: 10px; padding: 12px; border: none; border-radius: 20px; background: #00897b; color: #fff; font-size: 13px; font-weight: bold; }
+
+/* バナー・状態 */
+.banner { margin: 12px 14px 0; border-radius: 12px; background: #00897b; color: #fff; padding: 12px 14px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.banner button { border: none; border-radius: 16px; padding: 8px 12px; font-size: 12px; font-weight: bold; background: #fff; color: #00695c; white-space: nowrap; }
+.empty { text-align: center; padding: 32px 14px; }
+.empty p { font-size: 13px; color: #555; margin-bottom: 14px; line-height: 1.7; }
+.relax { padding: 12px 16px; border: none; border-radius: 20px; background: #ffc53d; font-size: 13px; font-weight: bold; }
+.hold { margin: 12px 14px 0; border-radius: 12px; background: #fff3cd; padding: 12px 14px; font-size: 12px; color: #555; line-height: 1.6; }
+
+/* 調整パネル */
+.panel { border: 1px solid #e0e0e0; border-radius: 12px; padding: 14px; margin-bottom: 12px; background: #fafafa; }
+.panel h4 { font-size: 12px; margin-bottom: 2px; }
+.panel .autosave { font-size: 10px; color: #00695c; margin-bottom: 12px; }
+.slider-row { margin-bottom: 14px; }
+.slider-row label { font-size: 11px; color: #555; display: flex; justify-content: space-between; margin-bottom: 6px; }
+.slider-row label b { color: #263238; }
+.slider-row input[type="range"] { width: 100%; accent-color: #ffc53d; }
+.toggle { display: flex; gap: 6px; }
+.toggle button { flex: 1; text-align: center; font-size: 11px; padding: 8px 0; border: 1px solid #e0e0e0; border-radius: 14px; color: #777; background: #fff; }
+.toggle button.on { background: #263238; color: #fff; border-color: #263238; }
+.livecount { font-size: 12px; font-weight: bold; margin-top: 6px; }
+.close-panel { width: 100%; padding: 10px; border: 1px solid #bdbdbd; border-radius: 20px; background: #fff; font-size: 12px; margin-top: 10px; }
+
+/* S5 設定 */
+.setrow { display: flex; justify-content: space-between; align-items: center; padding: 15px 2px; border-bottom: 1px solid #eee; font-size: 13px; width: 100%; background: none; border-left: none; border-right: none; border-top: none; text-align: left; }
+.setrow small { display: block; font-size: 11px; color: #999; margin-top: 3px; }
+.setrow .arrow { color: #bbb; }
+.danger { color: #c62828; }
+
+.loading { padding: 40px; text-align: center; color: #888; font-size: 13px; }

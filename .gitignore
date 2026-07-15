@@ -1,0 +1,35 @@
+# === 依存パッケージ（巨大・上げない）===
+/node_modules
+/.pnp
+.pnp.js
+
+# === ビルド生成物 ===
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+
+# === 環境変数（秘密・上げない）===
+.env
+.env.local
+.env.*.local
+# ※ .env.local.example は共有してよいので除外しない
+
+# === ログ ===
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# === OS・エディタの一時ファイル ===
+.DS_Store
+Thumbs.db
+.vscode/*
+.idea/
+
+# === テスト・カバレッジ ===
+/coverage
+
+# === Vercel（使う場合）===
+.vercel
