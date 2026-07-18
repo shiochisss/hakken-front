@@ -6,8 +6,11 @@ import type {
   EventType,
   Me,
   MyList,
+  PhotoUploadResult,
   SearchResponse,
   StoreItem,
+  SubmissionInput,
+  SubmissionResult,
 } from "./types";
 
 const KEY = "hakken_mock_state";
@@ -33,10 +36,11 @@ function save(s: MockState) {
 }
 
 // サンプル店データ（stores.csv サンプル＋モックv3の例に基づくダミー）
+// 写真は全て null（＝プレースホルダ表示）。実写真はホットペッパー表示時取得／store_photosのSAS（本番）。
 const STORES: StoreItem[] = [
   {
     store_id: 1, name: "喫茶ロマン", category_l: "カフェ", category_s: "純喫茶",
-    status: "営業中", opening_hours: "〜19:00（水休）", photo: null,
+    status: "営業中", photo: null,
     raku: { walk1: 4, ride: 7, walk2: 0, total: 11, transfer: "none", via_hub: null },
     boarding_stop: "豊玉北", alight_stop: "江古田駅前", route_label: "江古田駅前行き（西武バス）",
     address: "練馬区旭丘1-99-9", area_label: "江古田", lat: 35.7379, lng: 139.6727,
@@ -44,7 +48,7 @@ const STORES: StoreItem[] = [
   },
   {
     store_id: 2, name: "ベーカリー麦畑", category_l: "飲食", category_s: "パン",
-    status: "営業中", opening_hours: "7:00〜18:00", photo: null,
+    status: "営業中", photo: null,
     raku: { walk1: 6, ride: 9, walk2: 0, total: 15, transfer: "none", via_hub: null },
     boarding_stop: "練馬駅前", alight_stop: "桜台駅前", route_label: "桜台駅経由 中村橋行き（西武バス）",
     address: "練馬区桜台1-99-9", area_label: "桜台", lat: 35.7386, lng: 139.6636,
@@ -52,7 +56,7 @@ const STORES: StoreItem[] = [
   },
   {
     store_id: 3, name: "スパイス食堂カルダモン", category_l: "飲食", category_s: "カレー",
-    status: "営業中", opening_hours: "11:30〜21:00", photo: null,
+    status: "営業中", photo: null,
     raku: { walk1: 8, ride: 12, walk2: 0, total: 20, transfer: "none", via_hub: null },
     boarding_stop: "豊玉北", alight_stop: "練馬駅前", route_label: "練馬駅行き（西武バス）",
     address: "練馬区練馬1-99-9", area_label: "練馬", lat: 35.7357, lng: 139.6518,
@@ -60,7 +64,7 @@ const STORES: StoreItem[] = [
   },
   {
     store_id: 4, name: "麺屋ねりま", category_l: "飲食", category_s: "ラーメン",
-    status: "営業中", opening_hours: "11:00〜22:00", photo: null,
+    status: "営業中", photo: null,
     raku: { walk1: 5, ride: 14, walk2: 4, total: 23, transfer: "none", via_hub: null },
     boarding_stop: "練馬駅前", alight_stop: "豊玉北", route_label: "新江古田駅行き（都営バス）",
     address: "練馬区豊玉北5-99-9", area_label: "豊玉", lat: 35.7379, lng: 139.6531,
@@ -68,7 +72,7 @@ const STORES: StoreItem[] = [
   },
   {
     store_id: 5, name: "湯処 ひかり湯", category_l: "銭湯", category_s: "銭湯",
-    status: "営業中", opening_hours: "15:00〜23:00（月休）", photo: null,
+    status: "営業中", photo: null,
     raku: { walk1: 7, ride: 18, walk2: 6, total: 31, transfer: "hub1", via_hub: "練馬駅" },
     boarding_stop: "豊玉北", alight_stop: "光が丘駅前", route_label: "練馬駅行き（西武バス）",
     address: "練馬区光が丘2-99-9", area_label: "光が丘", lat: 35.7583, lng: 139.6291,
@@ -76,7 +80,7 @@ const STORES: StoreItem[] = [
   },
   {
     store_id: 6, name: "古書と珈琲 ふくろう堂", category_l: "カフェ", category_s: "ブックカフェ",
-    status: "営業中", opening_hours: "12:00〜20:00（火休）", photo: null,
+    status: "営業中", photo: null,
     raku: { walk1: 3, ride: 22, walk2: 5, total: 30, transfer: "hub1", via_hub: "練馬駅" },
     boarding_stop: "豊玉北", alight_stop: "石神井公園駅前", route_label: "練馬駅行き（西武バス）",
     address: "練馬区石神井町3-99-9", area_label: "石神井公園", lat: 35.7433, lng: 139.6065,
@@ -222,5 +226,22 @@ export const mockApi = {
   logEvent: (_event_type: EventType, _store_id?: number, _meta?: unknown): void => {
     // モックでは console に出すだけ
     if (typeof window !== "undefined") console.debug("[mock event]", _event_type, _store_id ?? "", _meta ?? "");
+  },
+
+  // ───────── F11 たれ込み（モック） ─────────
+  submitTip: (input: SubmissionInput): Promise<SubmissionResult> => {
+    const s = load();
+    const submission_id = s.seq++;
+    save(s);
+    if (typeof window !== "undefined") console.debug("[mock submitTip]", input);
+    return delay({ submission_id });
+  },
+
+  uploadTipPhoto: (file: File, storeId: number): Promise<PhotoUploadResult> => {
+    const s = load();
+    const photo_id = s.seq++;
+    save(s);
+    if (typeof window !== "undefined") console.debug("[mock uploadTipPhoto]", file.name, storeId);
+    return delay({ photo_id });
   },
 };

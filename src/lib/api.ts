@@ -8,8 +8,11 @@ import type {
   EventType,
   Me,
   MyList,
+  PhotoUploadResult,
   SearchResponse,
   StoreItem,
+  SubmissionInput,
+  SubmissionResult,
 } from "./types";
 
 import { mockApi } from "./mock";
@@ -126,9 +129,39 @@ const realApi = {
       /* 計測はベストエフォート */
     });
   },
+
+  /**
+   * たれ込み投稿（F11・B-15）: 新規店／情報変更／閉店報告を承認待ちに登録。
+   * storesには書かれない（承認後に運営が手動反映）。写真は uploadTipPhoto が担当。
+   */
+  submitTip: (input: SubmissionInput) =>
+    request<SubmissionResult>("/api/submissions", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+
+  /**
+   * たれ込み写真アップロード（F11・B-16）: multipart/form-data。
+   * サーバ側で検証→EXIF除去→リサイズ→非公開Blob保存→store_photos に pending 行を作成。
+   * SASは発行されない（承認後にのみ配信対象）。
+   * ※ Content-Type は明示せず boundary を自動付与させる（request() は使わない）。
+   */
+  uploadTipPhoto: async (file: File, storeId: number): Promise<PhotoUploadResult> => {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("store_id", String(storeId));
+    const res = await fetch(`${BASE}/api/submissions/photo-upload`, {
+      method: "POST",
+      credentials: "include",
+      body: fd,
+    });
+    if (res.status === 401) throw new ApiError(401, "unauthorized");
+    if (!res.ok) throw new ApiError(res.status, await res.text());
+    return res.json();
+  },
 };
 
 /** モックモードなら mockApi、通常は FastAPI クライアント */
-export const api: typeof realApi = IS_MOCK ? (mockApi as typeof realApi) : realApi;
+export const api: typeof realApi = IS_MOCK ? (mockApi as unknown as typeof realApi) : realApi;
 
 export { ApiError };

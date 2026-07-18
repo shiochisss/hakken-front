@@ -1,5 +1,5 @@
 // ハッケンバス フロントエンド型定義
-// 対応資料: DB設計書 v1.0 ／ F4 API入出力・DB設計たたき台 v0.2
+// 対応資料: DB設計書 v1.3 ／ API設計書 v1.2
 
 export type Transfer = "none" | "hub1";
 export type PresetKey = "no_walk" | "balance" | "far_ok" | "custom";
@@ -35,9 +35,13 @@ export interface Raku {
 }
 
 /**
- * 検索結果アイテム（S2カード・S3詳細を同一itemで賄う＝たたき台v0.2 2-2）
- * 注: alight_stop / opening_hours はたたき台v0.2のレスポンスに無いが、
- * UIモックv3のS3（降車停名・営業時間表示）に必要なため追加提案している。
+ * 検索結果アイテム（S2カード・S3詳細を同一itemで賄う）
+ * 対応: API設計書 B-6 レスポンス。
+ * 写真: source=hotpepper（ホットペッパー表示時取得・クレジット表記必須）／
+ *       own・user（store_photos の status='approved' 行の SAS URL・有効期限あり）／
+ *       none（null＝プレースホルダ表示）。Places API は全廃（呼ばない）。
+ * 注: alight_stop / area_label は types.ts の追加提案（DB設計書 未決#2・#11 連動）。
+ *     opening_hours は廃止（営業時間は非表示・S3「Googleマップで見る」に委譲）。
  */
 export interface StoreItem {
   store_id: number;
@@ -45,8 +49,7 @@ export interface StoreItem {
   category_l: string;
   category_s: string;
   status: string; // "営業中" のみ配信される想定
-  opening_hours: string | null; // 例: "〜19:00（水休）" ※追加提案
-  photo: { source: "hotpepper" | "places"; ref: string } | null;
+  photo: { source: "hotpepper" | "own" | "user"; ref: string } | null;
   raku: Raku;
   boarding_stop: string;
   alight_stop: string; // ※追加提案
@@ -100,4 +103,37 @@ export interface ArrivalBanner {
   going_id: number;
   store_id: number;
   store_name: string;
+}
+
+// ───────── F11 たれ込み（ユーザー報告） ─────────
+// 対応: API設計書 B-15（投稿）／B-16（写真アップロード）。
+// 投稿は submissions/store_photos に status='pending' で入り、承認まで stores に反映されない。
+
+export type SubmissionType = "new_store" | "info_edit" | "closure_report";
+
+export interface NewStorePayload {
+  gmaps_url: string; // GoogleマップURL（必須）
+  comment?: string;
+}
+export interface InfoEditPayload {
+  comment: string; // 自由記述（何がどう間違っているか）
+}
+export interface ClosureReportPayload {
+  reason: string; // 閉店・休業の理由
+}
+
+/** POST /api/submissions のリクエスト（B-15） */
+export interface SubmissionInput {
+  type: SubmissionType;
+  store_id?: number | null; // new_store は null
+  payload: NewStorePayload | InfoEditPayload | ClosureReportPayload;
+}
+
+export interface SubmissionResult {
+  submission_id: number;
+}
+
+/** POST /api/submissions/photo-upload のレスポンス（B-16） */
+export interface PhotoUploadResult {
+  photo_id: number;
 }

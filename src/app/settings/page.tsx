@@ -1,8 +1,9 @@
 "use client";
 
-// S5 設定: アカウント系のみ（条件設定は置かない＝条件を触る場所はホームだけ）
+// S5 設定: アカウント系＋たれ込み入口（条件設定は置かない＝条件を触る場所はホームだけ）
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { api } from "@/lib/api";
 import type { Me } from "@/lib/types";
 import TabBar from "@/components/TabBar";
@@ -46,6 +47,15 @@ export default function SettingsPage() {
           </div>
           <div className="arrow">›</div>
         </button>
+
+        {/* たれ込み入口（F11・新規モード）→ S6 */}
+        <Link href="/tip" className="setrow">
+          <div>
+            お店を教える
+            <small>新しいお店のたれ込み（運営確認後に掲載）</small>
+          </div>
+          <div className="arrow">›</div>
+        </Link>
 
         <button className="setrow">
           <div>

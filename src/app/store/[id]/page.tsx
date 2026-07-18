@@ -1,9 +1,10 @@
 "use client";
 
 // S3 店詳細＝確信する画面
-// S2に持てないものだけ: ①どのバス停から何行きに乗るか（固有名詞）②営業中か ③写真複数 ④行動ボタン
-// 道順の細部と時刻はGoogleマップに委譲
+// S2に持てないものだけ: ①どのバス停から何行きに乗るか（固有名詞）②写真複数 ③行動ボタン
+// 営業時間は非表示（自社で持たない）→「Googleマップで見る」に委譲。道順・時刻も同様。
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { getCurrentPosition } from "@/lib/geo";
@@ -52,7 +53,7 @@ export default function StoreDetailPage() {
     setSheetOpen(true);
   };
 
-  // 「経路を見る」＝移動の実行（Google側）。別の行為として分離
+  // 「Googleマップで見る」＝営業時間・時刻・道順の確認（外部）。gmaps_out を計測。
   const openGmaps = () => {
     api.logEvent("gmaps_out", item.store_id);
     window.open(item.gmaps_url, "_blank", "noopener");
@@ -61,8 +62,13 @@ export default function StoreDetailPage() {
   return (
     <>
       {item.photo ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img className="photo detail-photo" src={item.photo.ref} alt={item.name} />
+        <div className="photo-wrap detail-photo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="photo detail-photo" src={item.photo.ref} alt={item.name} />
+          {item.photo.source === "hotpepper" && (
+            <span className="credit">Powered by ホットペッパー グルメ</span>
+          )}
+        </div>
       ) : (
         <div className="photo detail-photo">写真なし</div>
       )}
@@ -70,8 +76,7 @@ export default function StoreDetailPage() {
       <main className="main">
         <div className="dname">{item.name}</div>
         <div className="dmeta">
-          <span className="open">{item.status}</span>
-          {item.opening_hours ? ` ${item.opening_hours}` : ""}｜ {item.category_s || item.category_l}
+          <span className="open">{item.status}</span>｜ {item.category_s || item.category_l}
           {item.area_label ? `・${item.area_label}` : ""}
         </div>
 
@@ -113,6 +118,19 @@ export default function StoreDetailPage() {
         </div>
 
         {item.address && <div className="info">📍 {item.address}</div>}
+
+        {/* 営業時間・時刻・道順の確認は Google マップに委譲（自社では営業時間を持たない） */}
+        <button className="gmaps-btn" onClick={openGmaps}>
+          Googleマップで見る →
+        </button>
+
+        {/* データ鮮度の維持＝ユーザー報告（F11）。S6へ store_id 付きで遷移（報告モード） */}
+        <Link
+          href={`/tip?store_id=${item.store_id}&name=${encodeURIComponent(item.name)}`}
+          className="report-link"
+        >
+          情報が古い？ 情報の間違い・閉店を報告する
+        </Link>
       </main>
 
       <div className="actionbar">

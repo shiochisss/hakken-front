@@ -6,6 +6,7 @@ import type { StoreItem } from "@/lib/types";
 /**
  * S2カード＝比べる画面の1行。要約に徹する：写真・店名・カテゴリ・楽さサマリのみ。
  * 歩きとバスの内訳は比較に必須なので残す（乗換バッジ等の詳細はS3へ）。
+ * 写真の優先順: ホットペッパー表示時取得 → ユーザー投稿(store_photos の SAS) → プレースホルダ。
  */
 export default function StoreCard({ item }: { item: StoreItem }) {
   const walk = item.raku.walk1 + item.raku.walk2;
@@ -13,9 +14,14 @@ export default function StoreCard({ item }: { item: StoreItem }) {
     <Link href={`/store/${item.store_id}`} className="card-link">
       <div className="card">
         {item.photo ? (
-          // 写真はDBに保存せず表示時にAPI取得（ホットペッパー優先→Places）
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="photo" src={item.photo.ref} alt={item.name} loading="lazy" />
+          <div className="photo-wrap">
+            {/* 写真はDBに保存せず表示時に取得（hotpepper）／ user・own は承認済みSAS URL */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="photo" src={item.photo.ref} alt={item.name} loading="lazy" />
+            {item.photo.source === "hotpepper" && (
+              <span className="credit">Powered by ホットペッパー グルメ</span>
+            )}
+          </div>
         ) : (
           <div className="photo">写真なし</div>
         )}
