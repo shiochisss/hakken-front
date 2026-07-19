@@ -124,9 +124,9 @@ export default function StoreDetailPage() {
           Googleマップで見る →
         </button>
 
-        {/* データ鮮度の維持＝ユーザー報告（F11）。S6へ store_id 付きで遷移（報告モード） */}
+        {/* データ鮮度の維持＝ユーザー報告（F11）。S6b（店の報告）へ store_id 付きで遷移 */}
         <Link
-          href={`/tip?store_id=${item.store_id}&name=${encodeURIComponent(item.name)}`}
+          href={`/tip/report?store_id=${item.store_id}&name=${encodeURIComponent(item.name)}`}
           className="report-link"
         >
           情報が古い？ 情報の間違い・閉店を報告する

@@ -48,7 +48,7 @@ export default function SettingsPage() {
           <div className="arrow">›</div>
         </button>
 
-        {/* たれ込み入口（F11・新規モード）→ S6 */}
+        {/* たれ込み入口（F11・新規モード）→ S6a（/tip） */}
         <Link href="/tip" className="setrow">
           <div>
             お店を教える
