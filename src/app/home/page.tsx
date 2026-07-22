@@ -14,6 +14,7 @@ import type { ArrivalBanner, Conditions, PresetKey, SearchResponse } from "@/lib
 import StoreCard from "@/components/StoreCard";
 import AdjustPanel from "@/components/AdjustPanel";
 import TabBar from "@/components/TabBar";
+import FullScreenLoading from "@/components/FullScreenLoading";
 
 export default function HomePage() {
   const router = useRouter();
@@ -26,6 +27,9 @@ export default function HomePage() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [banner, setBanner] = useState<ArrivalBanner | null>(null);
   const [loading, setLoading] = useState(true);
+  // 初回ロード（着地→GPS→条件→初回検索）中は全画面ローディング。
+  // 以降の条件変更による再検索は loading（リスト内表示）で扱い、チップは見せ続ける。
+  const [initializing, setInitializing] = useState(true);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 起動処理: 前面GPS1回 → 保存済み条件 → 検索 → 着いたバナー照合
@@ -65,6 +69,7 @@ export default function HomePage() {
         api.logEvent("list_shown", undefined, { count: res.meta.count, conditions: c });
       } finally {
         setLoading(false);
+        setInitializing(false); // 初回検索が終わったら全画面ローディングを解除
       }
     },
     [pos]
@@ -100,6 +105,11 @@ export default function HomePage() {
       alert("まだ店の近くじゃないみたい。お店に着いたらもう一度押してね（記録は保留中）");
     }
   };
+
+  // 初回ロード中はフロー全体を途切れさせないため全画面ローディング（コールバック→/home の続き）
+  if (initializing && !geoDenied) {
+    return <FullScreenLoading message="読み込んでいます…" />;
+  }
 
   if (geoDenied) {
     return (

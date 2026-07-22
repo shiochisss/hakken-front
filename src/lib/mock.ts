@@ -117,6 +117,8 @@ export const mockApi = {
 
   loginUrl: () => "/", // モックでは即ログイン扱いで振り分けへ
 
+  warmup: (): Promise<void> => Promise.resolve(), // モックはウォームアップ不要（no-op）
+
   logout: (): Promise<void> => {
     if (typeof window !== "undefined") window.localStorage.removeItem(KEY);
     return delay(undefined);

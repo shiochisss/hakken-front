@@ -9,6 +9,7 @@ import { api } from "@/lib/api";
 import { getCurrentPosition } from "@/lib/geo";
 import { PRESETS } from "@/lib/presets";
 import type { PresetKey } from "@/lib/types";
+import FullScreenLoading from "@/components/FullScreenLoading";
 
 export default function SetupPage() {
   const router = useRouter();
@@ -36,6 +37,11 @@ export default function SetupPage() {
       alert("保存に失敗しました。通信環境を確認してもう一度お試しください。");
     }
   };
+
+  // プリセット保存→/home 遷移までの初回データ取得中は全画面ローディング（フローを途切れさせない）
+  if (saving) {
+    return <FullScreenLoading message="読み込んでいます…" />;
+  }
 
   if (step === 1) {
     return (

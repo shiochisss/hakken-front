@@ -4,6 +4,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import FullScreenLoading from "@/components/FullScreenLoading";
 
 export default function Index() {
   const router = useRouter();
@@ -19,5 +20,6 @@ export default function Index() {
       });
   }, [router]);
 
-  return <div className="loading">読み込み中…</div>;
+  // Google コールバック直後の着地点。/api/me の判定中はフローを途切れさせず表示を維持する。
+  return <FullScreenLoading message="読み込んでいます…" />;
 }
