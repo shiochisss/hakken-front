@@ -73,7 +73,7 @@ export default function StoreDetailPage() {
         <div className="photo detail-photo">写真なし</div>
       )}
 
-      <main className="main">
+      <main className="main main-detail">
         <div className="dname">{item.name}</div>
         <div className="dmeta">
           <span className="open">{item.status}</span>｜ {item.category_s || item.category_l}
