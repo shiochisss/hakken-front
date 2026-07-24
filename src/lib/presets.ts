@@ -22,7 +22,10 @@ export const PRESETS: Record<
   far_ok: {
     label: "遠出OK",
     emoji: "🚌",
-    values: { walk_max: 20, ride_max: 30, total_max: 60, transfer: "hub1" },
+    // walk_max は当初20だったが、reachが短距離モデル(直行1区間+hub2区間)のため
+    // 広い徒歩上限では「ほぼ徒歩＋おまけバス」の経路が最短で返る事象が判明し15に調整
+    // (2026-07-24 応急処置。根本はreach探索拡張=発表後の宿題)。
+    values: { walk_max: 15, ride_max: 30, total_max: 60, transfer: "hub1" },
   },
 };
 
