@@ -69,7 +69,6 @@ export default function MyListPage() {
               </div>
             )}
             {list.going.map((g) => {
-              const walk = g.store.raku.walk1 + g.store.raku.walk2;
               return (
                 <div className="card" key={g.going_id}>
                   <div className="cbody">
@@ -82,9 +81,6 @@ export default function MyListPage() {
                         {g.arrival_status === "verified" && "　✓来店済み"}
                         {g.arrival_status === "pending" && "　（記録は保留中）"}
                       </div>
-                      <span className="raku">
-                        🚶{walk}分 ＋ 🚌{g.store.raku.ride}分 ＝ {g.store.raku.total}分
-                      </span>
                     </Link>
                     {g.arrival_status !== "verified" && (
                       <button className="arrived-btn" onClick={() => arrived(g.going_id)}>
@@ -111,7 +107,6 @@ export default function MyListPage() {
               </div>
             )}
             {list.favorites.map((f) => {
-              const walk = f.store.raku.walk1 + f.store.raku.walk2;
               return (
                 <Link href={`/store/${f.store.store_id}`} className="card-link" key={f.store.store_id}>
                   <div className="card">
@@ -121,9 +116,6 @@ export default function MyListPage() {
                         {f.store.category_s || f.store.category_l}
                         {f.store.area_label ? `・${f.store.area_label}` : ""}
                       </div>
-                      <span className="raku">
-                        🚶{walk}分 ＋ 🚌{f.store.raku.ride}分 ＝ {f.store.raku.total}分
-                      </span>
                     </div>
                   </div>
                 </Link>
