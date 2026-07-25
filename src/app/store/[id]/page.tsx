@@ -61,7 +61,8 @@ export default function StoreDetailPage() {
 
   return (
     <>
-      {item.photo ? (
+      {/* 判定は ref（画像URL）の有無で行う。photo があっても ref が null のことがある（#14・写真なし） */}
+      {item.photo && item.photo.ref ? (
         <div className="photo-wrap detail-photo">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="photo detail-photo" src={item.photo.ref} alt={item.name} />

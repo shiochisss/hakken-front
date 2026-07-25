@@ -37,9 +37,13 @@ export interface Raku {
 /**
  * 検索結果アイテム（S2カード・S3詳細を同一itemで賄う）
  * 対応: API設計書 B-6 レスポンス。
- * 写真: source=hotpepper（ホットペッパー表示時取得・クレジット表記必須）／
- *       own・user（store_photos の status='approved' 行の SAS URL・有効期限あり）／
- *       none（null＝プレースホルダ表示）。Places API は全廃（呼ばない）。
+ * 写真: source=own・user（store_photos の status='approved' 行の SAS URL・有効期限あり）／
+ *       none（写真なし）。Places API は全廃（呼ばない）。
+ *       ref は「画像URL」。SAS未発行（#14）や写真なしでは null になるため、
+ *       表示側は photo の有無ではなく **ref の有無** で分岐する（null を <img src> に
+ *       入れると壊れた画像アイコンになる）。
+ *       source=hotpepper は当面サーバから返らない（hotpepper_url は店ページのURLで
+ *       画像ではないため。画像URL取得はAPI連携＝別件・未実装）。型は将来用に残す。
  * 注: alight_stop / area_label は types.ts の追加提案（DB設計書 未決#2・#11 連動）。
  *     opening_hours は廃止（営業時間は非表示・S3「Googleマップで見る」に委譲）。
  */
@@ -49,7 +53,7 @@ export interface StoreItem {
   category_l: string;
   category_s: string;
   status: string; // "営業中" のみ配信される想定
-  photo: { source: "hotpepper" | "own" | "user"; ref: string } | null;
+  photo: { source: "hotpepper" | "own" | "user" | "none"; ref: string | null } | null;
   raku: Raku;
   boarding_stop: string;
   alight_stop: string; // ※追加提案

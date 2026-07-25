@@ -6,16 +6,19 @@ import type { StoreItem } from "@/lib/types";
 /**
  * S2カード＝比べる画面の1行。要約に徹する：写真・店名・カテゴリ・楽さサマリのみ。
  * 歩きとバスの内訳は比較に必須なので残す（乗換バッジ等の詳細はS3へ）。
- * 写真の優先順: ホットペッパー表示時取得 → ユーザー投稿(store_photos の SAS) → プレースホルダ。
+ * 写真の優先順: ユーザー投稿(store_photos の SAS) → プレースホルダ。
+ * 判定は photo の有無ではなく ref（画像URL）の有無で行う。SAS未発行(#14)や写真なしでは
+ * photo オブジェクトはあっても ref が null で、そのまま <img src> に入れると壊れた画像に
+ * なるため。
  */
 export default function StoreCard({ item }: { item: StoreItem }) {
   const walk = item.raku.walk1 + item.raku.walk2;
   return (
     <Link href={`/store/${item.store_id}`} className="card-link">
       <div className="card">
-        {item.photo ? (
+        {item.photo && item.photo.ref ? (
           <div className="photo-wrap">
-            {/* 写真はDBに保存せず表示時に取得（hotpepper）／ user・own は承認済みSAS URL */}
+            {/* 写真はDBに保存しない。user・own は承認済み行の SAS URL（発行は#14で未実装） */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="photo" src={item.photo.ref} alt={item.name} loading="lazy" />
             {item.photo.source === "hotpepper" && (
