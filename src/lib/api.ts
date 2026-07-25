@@ -16,6 +16,7 @@ import type {
 } from "./types";
 
 import { mockApi } from "./mock";
+import { normalizePhotoFile } from "./photo";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
@@ -155,10 +156,12 @@ const realApi = {
    * サーバ側で検証→EXIF除去→リサイズ→非公開Blob保存→store_photos に pending 行を作成。
    * SASは発行されない（承認後にのみ配信対象）。
    * ※ Content-Type は明示せず boundary を自動付与させる（request() は使わない）。
+   * ※ File.type が空だとサーバの Content-Type 検証で 400 になるため、空のときだけ
+   *   拡張子から補って File を作り直す（normalizePhotoFile）。値があれば尊重する。
    */
   uploadTipPhoto: async (file: File, storeId: number): Promise<PhotoUploadResult> => {
     const fd = new FormData();
-    fd.append("file", file);
+    fd.append("file", normalizePhotoFile(file));
     fd.append("store_id", String(storeId));
     const res = await fetch(`${BASE}/api/submissions/photo-upload`, {
       method: "POST",

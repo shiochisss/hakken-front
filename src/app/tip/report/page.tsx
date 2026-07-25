@@ -8,6 +8,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
+import { PHOTO_ACCEPT, checkPhotoFile } from "@/lib/photo";
 import type { SubmissionType } from "@/lib/types";
 
 type Tab = "info_edit" | "closure_report" | "photo";
@@ -47,17 +48,23 @@ function ReportForm() {
   const commentLabel =
     tab === "info_edit" ? "何がどう違うか（必須）" : "閉店・休業の状況（必須）";
 
+  // 投稿できない形式は黙って捨てず、ファイル名と理由を伝える（HEICは受付対象）。
   const onPickFiles = (list: FileList | null) => {
     if (!list) return;
-    const picked = Array.from(list).filter(
-      (f) => f.type === "image/jpeg" || f.type === "image/png"
-    );
-    setFiles(picked);
+    const accepted: File[] = [];
+    const rejected: string[] = [];
+    for (const f of Array.from(list)) {
+      const r = checkPhotoFile(f);
+      if (r.ok) accepted.push(f);
+      else rejected.push(`${f.name}（${r.reason}）`);
+    }
+    setFiles(accepted);
+    setError(rejected.length ? `投稿できないファイル: ${rejected.join(" / ")}` : null);
   };
 
   const validate = (): string | null => {
     if (tab === "photo") {
-      if (files.length === 0) return "写真（JPEG／PNG）を選んでください。";
+      if (files.length === 0) return "写真（JPEG／PNG／HEIC）を選んでください。";
     } else if (!comment.trim()) {
       return "内容を入力してください。";
     }
@@ -147,12 +154,12 @@ function ReportForm() {
             <label>写真（必須）</label>
             <input
               type="file"
-              accept="image/jpeg,image/png"
+              accept={PHOTO_ACCEPT}
               multiple
               onChange={(e) => onPickFiles(e.target.files)}
             />
             <small className="tip-hint">
-              自分で撮った写真だけを投稿してください（JPEG／PNG）。
+              自分で撮った写真だけを投稿してください（JPEG／PNG／HEIC）。
               {files.length > 0 ? ` 選択中: ${files.length}枚` : ""}
             </small>
           </div>
