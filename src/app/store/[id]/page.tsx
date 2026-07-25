@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { getCurrentPosition } from "@/lib/geo";
+import { buildTransitDirectionsUrl } from "@/lib/gmaps";
 import type { StoreItem } from "@/lib/types";
 import TabBar from "@/components/TabBar";
 
@@ -15,6 +16,8 @@ export default function StoreDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [item, setItem] = useState<StoreItem | null>(null);
+  // 経路URLの origin に使うため現在地を保持する（取得は初回の1回だけ・F2）
+  const [pos, setPos] = useState<{ lat: number; lng: number } | null>(null);
   const [faved, setFaved] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [badge, setBadge] = useState(0);
@@ -22,8 +25,9 @@ export default function StoreDetailPage() {
   useEffect(() => {
     (async () => {
       try {
-        const pos = await getCurrentPosition();
-        const data = await api.getStore(Number(id), pos.lat, pos.lng);
+        const p = await getCurrentPosition();
+        setPos(p);
+        const data = await api.getStore(Number(id), p.lat, p.lng);
         setItem(data);
         api.logEvent("store_view", data.store_id);
       } catch {
@@ -57,6 +61,16 @@ export default function StoreDetailPage() {
   const openGmaps = () => {
     api.logEvent("gmaps_out", item.store_id);
     window.open(item.gmaps_url, "_blank", "noopener");
+  };
+
+  // 「Googleマップで経路を見る」＝現在地→店の経路（travelmode=transit）を外部で開く。
+  // ※Googleマップが独自に経路を計算するため、上の「行き方の楽さ」（reach 由来の
+  //   乗車停・降車停・系統）と一致しない場合がある。詳細は lib/gmaps.ts のコメント。
+  // 現在地が未取得の場合のみ店ページにフォールバック（item は現在地取得後にしか入らないため通常は起きない）。
+  const openGmapsRoute = () => {
+    api.logEvent("gmaps_out", item.store_id);
+    const url = pos ? buildTransitDirectionsUrl(pos, item) : item.gmaps_url;
+    window.open(url, "_blank", "noopener");
   };
 
   return (
@@ -149,7 +163,7 @@ export default function StoreDetailPage() {
           <div className="sheet" onClick={(e) => e.stopPropagation()}>
             <h4>✓ マイリスト（行く予定）に追加しました</h4>
             <p>バスの時刻と道順はGoogleマップで確認できます</p>
-            <button className="primary" onClick={openGmaps}>
+            <button className="primary" onClick={openGmapsRoute}>
               Googleマップで経路を見る →
             </button>
             <button className="ghost" onClick={() => setSheetOpen(false)}>
