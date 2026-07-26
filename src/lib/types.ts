@@ -55,6 +55,12 @@ export interface StoreItem {
   status: string; // "営業中" のみ配信される想定
   photo: { source: "hotpepper" | "own" | "user" | "none"; ref: string | null } | null;
   raku: Raku;
+  /**
+   * 「本数少なめ」＝この経路の土日10-16時の便数が2本未満（しきい値は暫定・2026-07-26）。
+   * 検索からは除外せず、S2カードとS3詳細でバッジとして開示する（ユーザーに判断を委ねる）。
+   * 判定はサーバ側（reach.min_trip_count）。未計算のときは false が返る。
+   */
+  few_trips: boolean;
   boarding_stop: string;
   alight_stop: string; // ※追加提案
   route_label: string;

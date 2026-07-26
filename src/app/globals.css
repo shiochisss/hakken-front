@@ -62,6 +62,9 @@ img.photo { object-fit: cover; }
 .ccat { font-size: 11px; color: #888; margin: 3px 0 8px; }
 .raku { display: inline-block; font-size: 12px; font-weight: bold; background: #fff3cd; border-radius: 6px; padding: 4px 10px; }
 .raku-note { font-size: 10px; color: #999; margin-top: 4px; }
+/* 「本数少なめ」バッジ（S2カード・S3詳細）。検索から除外はせず開示するだけなので、
+   警告色（赤）ではなく .raku と同系の控えめな注記色にする（判断はユーザーに委ねる） */
+.few-trips { display: inline-block; margin-left: 6px; font-size: 11px; color: #8d6e00; background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
 
 /* 下部タブ */
 .tabs { display: flex; border-top: 1px solid #e0e0e0; position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #fff; z-index: 20; }

@@ -37,6 +37,8 @@ export default function StoreCard({ item }: { item: StoreItem }) {
           <span className="raku">
             🚶{walk}分 ＋ 🚌{item.raku.ride}分 ＝ {item.raku.total}分
           </span>
+          {/* 本数少なめ（土日昼2本未満）。除外はせず開示するだけ＝警告ではなく注記の見た目 */}
+          {item.few_trips && <span className="few-trips">🚌 本数少なめ</span>}
           {/* 合計時間の注意書き（チーム決定 2026-07-04）：時間表示の近くに明記 */}
           <div className="raku-note">※待ち時間・乗換時間は含みません</div>
         </div>

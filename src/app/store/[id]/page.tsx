@@ -126,6 +126,12 @@ export default function StoreDetailPage() {
             🚌 「{item.boarding_stop}」から <b>{item.route_label}</b>に乗車・
             {item.raku.transfer === "none" ? "乗換なし" : `ハブ（${item.raku.via_hub}）で乗換1回`}
           </div>
+          {/* 本数少なめ（土日昼2本未満）。乗る系統の直後＝「その経路の性質」として読ませる */}
+          {item.few_trips && (
+            <div className="busline">
+              <span className="few-trips">🚌 本数少なめ</span> 土日の昼はこの経路の便が少なめです
+            </div>
+          )}
           <div className="total">
             合計 {item.raku.total}分
             <small>※待ち時間・乗換時間は含みません</small>
