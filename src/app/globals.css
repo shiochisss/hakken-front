@@ -18,9 +18,11 @@ button { font-family: inherit; cursor: pointer; }
 
 /* アプリバー */
 .appbar { padding: 12px 14px; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
-.appbar .loc { font-size: 14px; font-weight: bold; }
-.appbar .loc small { display: block; font-weight: normal; font-size: 11px; color: #888; }
-.gear { width: 28px; height: 28px; border-radius: 50%; background: #eceff1; border: none; text-align: center; line-height: 28px; font-size: 14px; }
+/* 起点表示（2026-07-27）: 「〈住所〉から探しています」は長くなりうる。住所は判断材料なので
+   省略（…）せず**折り返す**。flex の子は既定 min-width:auto で縮まないため 0 を明示する。 */
+.appbar .loc { font-size: 14px; font-weight: bold; min-width: 0; margin-right: 8px; line-height: 1.35; overflow-wrap: anywhere; }
+.appbar .loc small { display: block; font-weight: normal; font-size: 11px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gear { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; background: #eceff1; border: none; text-align: center; line-height: 28px; font-size: 14px; }
 
 .main { flex: 1; padding: 12px 14px 80px; }
 /* 店詳細のみ: 固定の行動バー(actionbar)＋タブバー分を下に確保し、内容が隠れないようにする */

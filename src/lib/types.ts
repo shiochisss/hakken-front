@@ -77,11 +77,28 @@ export interface RelaxSuggestion {
   count: number;
 }
 
+/**
+ * 検索の起点（S2ヘッダの「〈住所〉から探しています」）。
+ * 実機で「現在地がどこからなのか分からず、提示されるルートの信ぴょう性が薄い」と
+ * 指摘されたため追加（2026-07-27）。住所はサーバ側が同梱データの最寄り探索で解決する
+ * （外部APIは呼ばない）。`source` で表示を3分岐する:
+ *   `oaza` … 住所が出た（`label` を表示・`nearest_stop` は補助表示）
+ *   `stop` … 住所は出ず最寄停名で代替（`label` は null）
+ *   `none` … どちらも出ない → 従来文言「現在地から探しています」に戻す
+ * `preview=1`（件数のみ）のレスポンスには含まれない。
+ */
+export interface SearchOrigin {
+  label: string | null;
+  nearest_stop: string | null;
+  source: "oaza" | "stop" | "none";
+}
+
 export interface SearchResponse {
   items: StoreItem[];
   meta: {
     count: number;
     relax_suggestions?: RelaxSuggestion[];
+    origin?: SearchOrigin;
   };
 }
 
