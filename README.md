@@ -1,6 +1,7 @@
 # ハッケンバス フロントエンド
 
-UIモックアップ v3・DB設計書 v1.0 に対応した Next.js（App Router / TypeScript）実装。
+UIモックアップ v3・DB設計書 v1.7・API設計書 v1.4・画面設計書 v1.5 に対応した
+Next.js（App Router / TypeScript）実装。
 バックエンドは FastAPI 前提（Cookie セッション認証・CORS は `credentials` 許可が必要）。
 
 ## クイックスタート（バックエンドなしで画面を見る＝モックモード）
@@ -29,8 +30,10 @@ npm run dev                        # http://localhost:3000 を開く
 | `/store/[id]` | S3 店詳細（行き方の楽さ・ここ行くシート） |
 | `/mylist` | S4 マイリスト（行く予定／お気に入り・着いたよボタン） |
 | `/settings` | S5 設定（アカウント系のみ） |
+| `/tip` | S6a たれ込み・新しいお店（F11） |
+| `/tip/report` | S6b たれ込み・店の報告（F11。`?store_id=&name=` 付きでS3から遷移） |
 
-## FastAPI 側に想定しているエンドポイント（要すり合わせ）
+## FastAPI 側のエンドポイント（2026-07-26 時点で全て実装済み）
 
 - `GET /api/me` → `{id, email, has_conditions}`（未ログイン401）
 - `GET /auth/google/login` / `POST /auth/logout`
@@ -43,12 +46,14 @@ npm run dev                        # http://localhost:3000 を開く
 - `GET /api/arrival-banner?lat&lng`（48h×150m×最近傍の判定はサーバ側→該当なしはnull）
 - `GET /api/mylist` → `{going:[], favorites:[]}`
 - `POST /api/events`（計測ログ。ベストエフォート）
+- `POST /api/submissions` / `POST /api/submissions/photo-upload`（F11 たれ込み）
 
 ## 設計メモ
 
 - **条件モデルの一本化（モックv3の核）**: 条件は常に1セット。チップもスライダーも触った瞬間に反映し、保存はデバウンス（400ms）で自動。プリセットとズレたら `custom` 判定（`lib/presets.ts` の `detectPreset`）。
 - **位置情報は前面・都度取得のみ**（`lib/geo.ts`）。バックグラウンド追跡なし。
-- **写真はDB非保存・表示時取得**: `photo.ref` のURLを `<img>` で直接表示（ホットペッパー優先→Places の振り分けはサーバ側）。
+- **写真はDB非保存・表示時取得**: `photo.ref` のURLを `<img>` で直接表示。優先順はサーバ側で決める（ホットペッパー → `store_photos` の承認済み写真のSAS URL → プレースホルダ）。**Places API は全廃**（v1.1）。`ref` は null になりうるので、表示側は `photo` の有無ではなく **`ref` の有無**で分岐する。
 - **合計時間の注意書き**（チーム決定 2026-07-04）: S2カード・S3詳細の時間表示近くに「待ち時間・乗換時間を含まない」を明記済み。
-- **たたき台v0.2のAPIレスポンスへの追加提案**: `alight_stop`（S3の降車停表示）・`opening_hours`（S3の営業時間表示）・`area_label`（S2カードのエリア表示。出所はDB設計書9章#11＝未決）。バックエンド実装時に確定のこと。
+- **たたき台v0.2のAPIレスポンスへの追加**: `alight_stop`（S3の降車停表示）・`area_label`（S2カードのエリア表示。出所はDB設計書9章#11＝未決）。いずれもバックエンド実装済み。`opening_hours` は**廃止**（v1.2 で営業時間は非表示に確定し、Googleマップへ委譲）。
+- **「🚌 本数少なめ」バッジ**: `few_trips`（土日10-16時の便数が2本未満）を S2カード・S3詳細で開示する。検索からは除外しない。しきい値はサーバ側の暫定値（hakken-api の `FEW_TRIPS_THRESHOLD`）。
 - プリセット数値・カテゴリチップ対応は**仮値**（TBD。`lib/presets.ts` 参照）。

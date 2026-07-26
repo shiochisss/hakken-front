@@ -99,10 +99,15 @@ export default function HomePage() {
 
   const onArrived = async () => {
     if (!banner || !pos) return;
-    const r = await api.arrived(banner.going_id, pos.lat, pos.lng);
-    setBanner(null);
-    if (r.result === "pending") {
-      alert("まだ店の近くじゃないみたい。お店に着いたらもう一度押してね（記録は保留中）");
+    try {
+      const r = await api.arrived(banner.going_id, pos.lat, pos.lng);
+      setBanner(null);
+      if (r.result === "pending") {
+        alert("まだ店の近くじゃないみたい。お店に着いたらもう一度押してね（記録は保留中）");
+      }
+    } catch {
+      // 記録できていないのでバナーは消さない（もう一度押せる状態を保つ）
+      alert("記録できませんでした。通信状況を確認してもう一度お試しください。");
     }
   };
 

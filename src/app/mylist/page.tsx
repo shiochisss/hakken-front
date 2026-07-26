@@ -20,13 +20,22 @@ export default function MyListPage() {
 
   // 「着いたよ」= 前面GPSを1回だけ照合（何が起きるかは説明文を常設＝間違えない）
   const arrived = async (goingId: number) => {
+    // 位置情報の失敗と通信の失敗は原因が違うので、まとめて catch せず別々に扱う
+    // （以前は API 失敗でも「位置情報が取得できませんでした」と出ていた）
+    let pos;
     try {
-      const pos = await getCurrentPosition();
+      pos = await getCurrentPosition();
+    } catch {
+      alert("位置情報が取得できませんでした。設定を確認してください。");
+      return;
+    }
+    try {
       const r = await api.arrived(goingId, pos.lat, pos.lng);
       if (r.result === "pending") setHoldMsg(true);
       load();
     } catch {
-      alert("位置情報が取得できませんでした。設定を確認してください。");
+      // 記録できていないので状態は変えない（次にもう一度押せる）
+      alert("記録できませんでした。通信状況を確認してもう一度お試しください。");
     }
   };
 
