@@ -31,7 +31,7 @@ export interface Raku {
   walk2: number; // 降車停→店 徒歩分
   total: number;
   transfer: Transfer;
-  via_hub: string | null; // 経由ハブ停名（乗換時のみ）
+  via_hub: string | null; // 乗換する停の名前（乗換時のみ）。2026-07-26 以降ハブ停に限らない
 }
 
 /**

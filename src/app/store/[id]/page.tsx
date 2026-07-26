@@ -124,7 +124,8 @@ export default function StoreDetailPage() {
           </div>
           <div className="busline">
             🚌 「{item.boarding_stop}」から <b>{item.route_label}</b>に乗車・
-            {item.raku.transfer === "none" ? "乗換なし" : `ハブ（${item.raku.via_hub}）で乗換1回`}
+            {/* 乗換停はハブとは限らない（2026-07-26 に is_hub 限定を廃止）ので停名だけ出す */}
+            {item.raku.transfer === "none" ? "乗換なし" : `「${item.raku.via_hub}」で乗換1回`}
           </div>
           {/* 本数少なめ（土日昼2本未満）。乗る系統の直後＝「その経路の性質」として読ませる */}
           {item.few_trips && (

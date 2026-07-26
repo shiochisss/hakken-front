@@ -82,7 +82,8 @@ export default function AdjustPanel({
             className={conditions.transfer === "hub1" ? "on" : ""}
             onClick={() => onChange({ transfer: "hub1" })}
           >
-            ハブで1回OK
+            {/* 乗換停はハブに限らなくなった（2026-07-26）ので「ハブで」を外す */}
+            1回までOK
           </button>
         </div>
       </div>
