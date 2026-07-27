@@ -157,7 +157,15 @@ export const mockApi = {
         : undefined;
     return delay({
       items: params.preview ? [] : items,
-      meta: { count: items.length, relax_suggestions: relax },
+      meta: {
+        count: items.length,
+        relax_suggestions: relax,
+        // 起点の住所。モックは外部にも自前データにも触らないので固定値
+        // （フォールバック地点＝練馬駅付近の住所。本番はサーバが解決する）
+        origin: params.preview
+          ? undefined
+          : { label: "東京都練馬区豊玉北六丁目", nearest_stop: "練馬駅北口", source: "oaza" as const },
+      },
     });
   },
 

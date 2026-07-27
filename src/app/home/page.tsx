@@ -10,11 +10,30 @@ import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 import { getCurrentPosition } from "@/lib/geo";
 import { CATEGORY_CHIPS, PRESETS, detectPreset } from "@/lib/presets";
-import type { ArrivalBanner, Conditions, PresetKey, SearchResponse } from "@/lib/types";
+import type { ArrivalBanner, Conditions, PresetKey, SearchOrigin, SearchResponse } from "@/lib/types";
 import StoreCard from "@/components/StoreCard";
 import AdjustPanel from "@/components/AdjustPanel";
 import TabBar from "@/components/TabBar";
 import FullScreenLoading from "@/components/FullScreenLoading";
+
+/**
+ * ヘッダの「どこから探しているか」の文言（画面設計書 B-S2）。
+ * 実機で「現在地がどこからなのか分からないため、提示されるルートの信ぴょう性が薄い」と
+ * 指摘されたため、起点を住所で明示する（2026-07-27）。住所の解決はサーバ側。
+ * 起点が取れないとき（データ圏外・古いサーバ）は従来文言に戻す＝表示が空にならない。
+ */
+function originText(origin: SearchOrigin | undefined): { main: string; sub: string } {
+  if (origin?.source === "oaza" && origin.label) {
+    return {
+      main: `📍 ${origin.label} から探しています`,
+      sub: origin.nearest_stop ? `最寄りのバス停: ${origin.nearest_stop}` : "",
+    };
+  }
+  if (origin?.source === "stop" && origin.nearest_stop) {
+    return { main: `📍 ${origin.nearest_stop} の近くから探しています`, sub: "" };
+  }
+  return { main: "📍 現在地から", sub: "現在地から探しています" };
+}
 
 export default function HomePage() {
   const router = useRouter();
@@ -135,13 +154,15 @@ export default function HomePage() {
   }
 
   const isCustom = conditions?.preset_key === "custom";
+  // 再検索中は前回の result を保持しているので、ヘッダの起点表示はちらつかない
+  const origin = originText(result?.meta.origin);
 
   return (
     <>
       <header className="appbar">
         <div className="loc">
-          📍 現在地から
-          <small>現在地から探しています</small>
+          {origin.main}
+          {origin.sub && <small>{origin.sub}</small>}
         </div>
         <button className="gear" onClick={() => router.push("/settings")} aria-label="設定">
           ⚙
