@@ -48,7 +48,19 @@ export function detectPreset(c: Omit<Conditions, "preset_key">): PresetKey {
   return "custom";
 }
 
-/** カテゴリチップ（category_l/s との対応表は未決＝DB設計書9章#12。仮実装） */
+/**
+ * カテゴリチップ（対応表は DB設計書9章#12・サーバ側の絞り込みは `search.py` の `_CATEGORY_SQL`）。
+ *
+ * 2026-07-28 まで**サーバが category を絞り込みに使っておらず、どのチップを押しても
+ * 全件が返っていた**（本番で発見）。サーバ側の実装で解消。
+ *
+ * 掲載146店の実データでは「パン」（`category_s='パン'`）と「銭湯」（`category_l='銭湯'`）は
+ * 該当0件だが、**チップは残す**（2026-07-28 判断）。押した結果が正しく0件になるほうが
+ * 実態を伝えられるうえ、掲載が増えれば自動で出るようになるため。
+ *
+ * キーを増減するときは**サーバの `_CATEGORY_SQL` と必ず両方**直すこと。サーバは対応表に
+ * 無いキーを 400 で弾くので、片方だけ変えると検索が失敗する（テストで固定してある）。
+ */
 export const CATEGORY_CHIPS: { key: string | null; label: string }[] = [
   { key: null, label: "すべて" },
   { key: "cafe", label: "カフェ" },
