@@ -67,6 +67,13 @@ img.photo { object-fit: cover; }
 /* 「本数少なめ」バッジ（S2カード・S3詳細）。検索から除外はせず開示するだけなので、
    警告色（赤）ではなく .raku と同系の控えめな注記色にする（判断はユーザーに委ねる） */
 .few-trips { display: inline-block; margin-left: 6px; font-size: 11px; color: #8d6e00; background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
+/* 条件外の経路（2026-07-28）。few_trips と同じ「開示するだけ」の見た目にし、
+   赤などの警告色は使わない（経路自体は正しく、いまの条件に合わないだけなので） */
+.out-of-cond { display: inline-block; font-size: 11px; color: #5c6bc0; background: #e8eaf6; border: 1px solid #c5cae9; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
+/* 徒歩の方が速い店（2026-07-28）。バス経路の黄色と区別して緑系にし、「歩き」を主に見せる。
+   バスの所要は small で従属させる（消さずに残す＝実測値の情報を失わないため） */
+.raku.walk-only { background: #e8f5e9; }
+.raku.walk-only small { display: block; margin-top: 2px; font-weight: normal; font-size: 11px; color: #558b2f; }
 
 /* 下部タブ */
 .tabs { display: flex; border-top: 1px solid #e0e0e0; position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #fff; z-index: 20; }
@@ -81,6 +88,11 @@ img.photo { object-fit: cover; }
 .dname { font-size: 18px; font-weight: bold; margin-top: 10px; }
 .dmeta { font-size: 12px; color: #888; margin: 4px 0 12px; }
 .open { color: #00695c; font-weight: bold; }
+/* S3 の「歩いて○分で着きます」（2026-07-28）。経路図の上に置く2行ブロック。
+   既存の .rakubox（黄色）と並ぶので緑系にして役割の違いを示す */
+.walkbox { border: 2px solid #a5d6a7; border-radius: 12px; padding: 12px; background: #f1f8e9; margin-bottom: 12px; }
+.walkbox h4 { font-size: 13px; margin-bottom: 4px; }
+.walkbox small { font-size: 10px; color: #777; }
 .rakubox { border: 2px solid #ffc53d; border-radius: 12px; padding: 12px; background: #fffdf5; }
 .rakubox h4 { font-size: 12px; margin-bottom: 14px; }
 .steps { display: flex; align-items: center; justify-content: space-between; font-size: 10px; text-align: center; color: #333; }

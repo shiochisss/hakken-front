@@ -61,6 +61,10 @@ export interface StoreItem {
    * 判定はサーバ側（reach.min_trip_count）。未計算のときは false が返る。
    */
   few_trips: boolean;
+  /** 徒歩の方が速いときのみ。null ならバス経路をそのまま見せる（従来どおり） */
+  walk_only: WalkOnly | null;
+  /** 楽条件を満たさない経路のとき（S3のみ発生）。S2 は常に null */
+  out_of_conditions: OutOfConditions | null;
   boarding_stop: string;
   alight_stop: string; // ※追加提案
   route_label: string;
@@ -69,6 +73,38 @@ export interface StoreItem {
   lat: number;
   lng: number;
   gmaps_url: string;
+}
+
+/**
+ * 徒歩の方が速いとき（2026-07-28 追加）。バス経路（`raku`・`boarding_stop`・
+ * `route_label`）は**消えずにそのまま入っている**ので、両方を並べて見せられる。
+ *
+ * 背景: それまで検索は reach（バス経路）しか見ておらず、駅前の店にもバスを勧めていた
+ * （江古田駅→焼肉レストラン三宝苑は直線徒歩0分なのに「歩2＋バス2＋歩5＝9分」）。
+ *
+ * `minutes` は直線距離×1.3÷80m/分の**推定**で、川・線路・高低差を無視する。そのため
+ * 表示では `distance_m` を併記し「※直線距離からの目安です」と添えて断定を避ける。
+ */
+export interface WalkOnly {
+  minutes: number;
+  distance_m: number;
+}
+
+/**
+ * いまの楽条件を満たさない経路を返しているとき、破っている条件（2026-07-28 追加）。
+ * 満たしているとき（＝S2と一致するとき）は null。
+ *
+ * 背景: B-7（店詳細）が楽条件を一切見ずに最小 total を選んでいたため、**S2 と S3 で
+ * 所要時間が食い違っていた**（同じ店が S2 29分／S3 18分。18分は乗換1回で、
+ * 「乗換なし」設定の S2 は除外していた）。B-7 も条件で選ぶよう修正したが、条件を満たす
+ * 経路が1件も無い店（マイリスト・お気に入り・直リンクから開いた場合）は、経路を隠さず
+ * 返して**どの条件を外れているかを開示する**（「除外せず開示する」＝`few_trips` と同じ方針）。
+ */
+export interface OutOfConditions {
+  transfer: boolean;
+  walk: boolean;
+  ride: boolean;
+  total: boolean;
 }
 
 export interface RelaxSuggestion {
