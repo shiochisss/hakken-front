@@ -50,7 +50,14 @@ button { font-family: inherit; cursor: pointer; }
 .chips { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
 .chip { font-size: 12px; padding: 7px 12px; border-radius: 16px; background: #eceff1; color: #555; white-space: nowrap; border: none; flex-shrink: 0; }
-.chip.on { background: #263238; color: #fff; }
+/* 選択中の塗りつぶし色（2026-07-28 に #263238＝Blue Grey 900 から変更）。
+   純黒に近い #263238 は白文字とのコントラストが 13.2:1 と極端に高く、注意喚起や強い意思決定の
+   ような主張になっていた。ハッケンバスが出したいのは「ワクワク感」なので1段グレー寄りにする。
+   #455a64 は Material Blue Grey 700。**非選択チップの #eceff1（BG50）・写真プレースホルダの
+   #cfd8dc（BG100）と同じスケール**なので色相が揃い、ブランド黄 #ffc53d の主役性も損なわない
+   （真っ黒だと黄色と張り合う）。コントラストは 7.24:1 で WCAG AA（4.5:1）に余裕あり。
+   ※文字色としての #263238 は可読性のため据え置く（.tab.on／.seg button.on 等）。 */
+.chip.on { background: #455a64; color: #fff; }
 .chip.custom { background: #00695c; color: #fff; }
 .chip.adjust { background: #fff; border: 1px dashed #999; }
 
@@ -140,7 +147,8 @@ img.photo { object-fit: cover; }
 .slider-row input[type="range"] { width: 100%; accent-color: #ffc53d; }
 .toggle { display: flex; gap: 6px; }
 .toggle button { flex: 1; text-align: center; font-size: 11px; padding: 8px 0; border: 1px solid #e0e0e0; border-radius: 14px; color: #777; background: #fff; }
-.toggle button.on { background: #263238; color: #fff; border-color: #263238; }
+/* 乗換トグルの選択中。チップと同じ「選択中の塗りつぶし」なので同色に揃える（S2-b は S2 内） */
+.toggle button.on { background: #455a64; color: #fff; border-color: #455a64; }
 .livecount { font-size: 12px; font-weight: bold; margin-top: 6px; }
 .close-panel { width: 100%; padding: 10px; border: 1px solid #bdbdbd; border-radius: 20px; background: #fff; font-size: 12px; margin-top: 10px; }
 
