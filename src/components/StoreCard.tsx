@@ -34,9 +34,18 @@ export default function StoreCard({ item }: { item: StoreItem }) {
             {item.category_s || item.category_l}
             {item.area_label ? `・${item.area_label}` : ""}
           </div>
-          <span className="raku">
-            🚶{walk}分 ＋ 🚌{item.raku.ride}分 ＝ {item.raku.total}分
-          </span>
+          {/* 徒歩の方が速い店は徒歩を主に見せる（2026-07-28）。距離を併記するのは
+              minutes が直線近似の推定値だから＝断定しない。バス経路は下に小さく残す */}
+          {item.walk_only ? (
+            <span className="raku walk-only">
+              🚶 歩いて{item.walk_only.minutes}分（約{item.walk_only.distance_m}m）
+              <small>バスなら{item.raku.total}分</small>
+            </span>
+          ) : (
+            <span className="raku">
+              🚶{walk}分 ＋ 🚌{item.raku.ride}分 ＝ {item.raku.total}分
+            </span>
+          )}
           {/* 本数少なめ（土日昼2本未満）。除外はせず開示するだけ＝警告ではなく注記の見た目 */}
           {item.few_trips && <span className="few-trips">🚌 本数少なめ</span>}
           {/* 合計時間の注意書き（チーム決定 2026-07-04）：時間表示の近くに明記 */}

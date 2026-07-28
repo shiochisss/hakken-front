@@ -9,8 +9,26 @@ import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { getCurrentPosition } from "@/lib/geo";
 import { buildTransitDirectionsUrl } from "@/lib/gmaps";
-import type { StoreItem } from "@/lib/types";
+import type { OutOfConditions, Raku, StoreItem } from "@/lib/types";
 import TabBar from "@/components/TabBar";
+
+/**
+ * 「条件外」の理由を1文にする（2026-07-28）。
+ *
+ * S2 に出ない店をマイリスト・お気に入り・直リンクから開くと、条件を満たす経路が無いまま
+ * 経路が表示される。何が条件を外れているのか分からないと「S2と数字が違う」という
+ * 不信につながる（実際に本番で発生）ので、破った条件を具体的に述べる。
+ * 文言の組み立てはフロントの責務（サーバは真偽値だけ返す）。
+ */
+function describeOutOfConditions(o: OutOfConditions, raku: Raku): string {
+  const reasons: string[] = [];
+  if (o.transfer) reasons.push("乗換が1回あります");
+  if (o.walk) reasons.push(`歩きが${raku.walk1 + raku.walk2}分あります`);
+  if (o.ride) reasons.push(`バスが${raku.ride}分かかります`);
+  if (o.total) reasons.push(`合計${raku.total}分かかります`);
+  if (reasons.length === 0) return "いまの条件では出てこない経路です";
+  return `${reasons.join("・")}（いまの条件では出てこない経路です）`;
+}
 
 export default function StoreDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -95,6 +113,18 @@ export default function StoreDetailPage() {
           {item.area_label ? `・${item.area_label}` : ""}
         </div>
 
+        {/* 徒歩の方が速い店にだけ出す（2026-07-28）。既存の経路図・見出しには手を入れず、
+            上にブロックを足すだけにしている。距離を併記するのは minutes が直線距離×1.3 の
+            推定で、川・線路・高低差を無視するため＝断定しない */}
+        {item.walk_only && (
+          <div className="walkbox">
+            <h4>
+              🚶 歩いて{item.walk_only.minutes}分（約{item.walk_only.distance_m}m）で着きます
+            </h4>
+            <small>※直線距離からの目安です</small>
+          </div>
+        )}
+
         <div className="rakubox">
           <h4>あなたの現在地からの行き方の楽さ</h4>
           <div className="steps">
@@ -127,6 +157,15 @@ export default function StoreDetailPage() {
             {/* 乗換停はハブとは限らない（2026-07-26 に is_hub 限定を廃止）ので停名だけ出す */}
             {item.raku.transfer === "none" ? "乗換なし" : `「${item.raku.via_hub}」で乗換1回`}
           </div>
+          {/* 条件外の経路（2026-07-28）。S2 に出ない店をマイリスト等から開いたとき、
+              経路は隠さず「どの条件を外れているか」を開示する（few_trips と同じ方針）。
+              条件そのものはここでは変えられない＝触れる場所は S2 だけ（画面設計書 A-5） */}
+          {item.out_of_conditions && (
+            <div className="busline">
+              <span className="out-of-cond">⚙ 条件外</span>{" "}
+              {describeOutOfConditions(item.out_of_conditions, item.raku)}
+            </div>
+          )}
           {/* 本数少なめ（土日昼2本未満）。乗る系統の直後＝「その経路の性質」として読ませる */}
           {item.few_trips && (
             <div className="busline">
