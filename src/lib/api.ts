@@ -1,6 +1,10 @@
 // FastAPI バックエンドとの通信クライアント。
 // 認証は Cookie セッション前提（fetch は credentials: "include"）。
 // エンドポイントのパス・スキーマは FastAPI 側の実装と要すり合わせ。
+//
+// ★ 宛先はすべて**同一オリジンの相対パス**（BFF・API設計書 v1.8 A-12）。
+//   ブラウザはバックエンドのURLを知らない。中継は src/app/**/route.ts が行い、
+//   実際の転送先はサーバ専用の環境変数 API_ORIGIN で決まる。
 
 import type {
   ArrivalBanner,
@@ -18,7 +22,9 @@ import type {
 import { mockApi } from "./mock";
 import { normalizePhotoFile } from "./photo";
 
-const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+// 相対パス固定。NEXT_PUBLIC_API_BASE_URL は廃止した（JSに焼き込まれ、URLが露出するため）。
+// 転送先は src/lib/proxy.ts の API_ORIGIN（サーバ専用env）が持つ。
+const BASE = "";
 
 /** NEXT_PUBLIC_MOCK=1 でバックエンドなしのモックモード（ログイン不要・全画面閲覧可） */
 export const IS_MOCK = process.env.NEXT_PUBLIC_MOCK === "1";
@@ -55,13 +61,21 @@ const realApi = {
    * コールドスタート緩和のウォームアップ。/health を1回だけ叩いて App Service（F1・Always On不可）を
    * 起こす。結果は使わない・失敗は握りつぶす。CORSプリフライトを避けるため Content-Type 等の
    * カスタムヘッダは付けない（単純GET）。ページ離脱後も届くよう keepalive: true。
+   * ※ BFF 化により宛先は `/health`（相対パス）。中継は src/app/health/route.ts。
+   *   **中継が無いとフロント側の404を叩くだけになり、失敗が握りつぶされて気付けない。**
    */
   warmup: (): Promise<void> =>
     fetch(`${BASE}/health`, { method: "GET", keepalive: true })
       .then(() => undefined)
       .catch(() => undefined),
 
-  logout: () => request<void>("/auth/logout", { method: "POST" }),
+  /**
+   * ログアウト。★ここだけ `/api/auth/...` を通す。
+   * Azure Static Web Apps のハイブリッドNext.jsは `/api/` 配下でないパスへの非GETを
+   * 405 で弾くため（Azure/static-web-apps#1132）。API本体のパスは `/auth/logout` のまま。
+   * 詳細は API設計書 v1.8 A-12。
+   */
+  logout: () => request<void>("/api/auth/logout", { method: "POST" }),
 
   /** 楽条件（F3）: 1ユーザー1セット・即時保存 */
   getConditions: () => request<Conditions>("/api/conditions"),

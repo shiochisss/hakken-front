@@ -17,7 +17,42 @@ npm run dev                        # http://localhost:3000 を開く
 ## FastAPI 接続時のセットアップ
 
 `.env.local` の `NEXT_PUBLIC_MOCK` を消す（または0にする）と FastAPI 接続モードになる。
-`NEXT_PUBLIC_API_BASE_URL` にバックエンドのURLを設定すること。
+バックエンドのURLは **`API_ORIGIN`** に設定する（既定 `http://localhost:8000`）。
+
+```
+API_ORIGIN=http://localhost:8000
+NEXT_PUBLIC_MOCK=0
+```
+
+**`NEXT_PUBLIC_` を付けないこと。** 付けるとビルド時にJSへ焼き込まれ、
+ブラウザからバックエンドのURLが読めてしまう（旧 `NEXT_PUBLIC_API_BASE_URL` は廃止）。
+
+## BFF（サーバーサイドプロキシ）
+
+ブラウザは**同一オリジンの相対パスだけ**を叩く。Next.js のサーバが FastAPI へ中継する。
+狙いは①バックエンドURLをブラウザから隠す②フロントとAPIが same-site になり
+**Safari／Firefox／Brave のログイン不可が解消する**の2つ。設計は API設計書 v1.8 A-12。
+
+| ブラウザから見たパス | 中継先 | ファイル |
+|---|---|---|
+| `/api/...` | `${API_ORIGIN}/api/...` | `src/app/api/[...path]/route.ts` |
+| `/api/auth/logout` | `${API_ORIGIN}/auth/logout` | `src/app/api/auth/[...path]/route.ts` |
+| `/auth/google/login`・`/auth/google/callback` | `${API_ORIGIN}/auth/...` | `src/app/auth/[...path]/route.ts` |
+| `/health` | `${API_ORIGIN}/health` | `src/app/health/route.ts` |
+
+中継本体は `src/lib/proxy.ts`。**素通しに徹し、業務ロジックを持たせないこと。**
+
+> **なぜログアウトだけ `/api/auth/logout` なのか**
+> Azure Static Web Apps のハイブリッドNext.jsには、`/api/` 配下でないパスへの
+> **非GETリクエストを 405 で弾く**既知の不具合がある（Azure/static-web-apps#1132）。
+> 該当するのは `POST /auth/logout` の1本だけなので、これだけ `/api/` 配下へ逃がしている。
+> ログイン・コールバックは GET なので `/auth/` のままでよい（OAuth の state Cookie が
+> `path=/auth` のため、そのほうがバックエンドを変えずに済む）。
+
+**本番の環境変数**：`API_ORIGIN` は Azure Static Web Apps のアプリ設定に置く。
+あわせて App Service 側の `OAUTH_REDIRECT_URI`（フロントのドメイン）と
+`SESSION_COOKIE_SAMESITE=lax`、Google Cloud のリダイレクトURI登録が必要
+（`hakken-docs/security/ハッケンバス_セキュリティ対応手順_2026-08-10.md` の対策4）。
 
 ## 画面構成（モックv3準拠）
 
@@ -36,7 +71,7 @@ npm run dev                        # http://localhost:3000 を開く
 ## FastAPI 側のエンドポイント（2026-07-26 時点で全て実装済み）
 
 - `GET /api/me` → `{id, email, has_conditions}`（未ログイン401）
-- `GET /auth/google/login` / `POST /auth/logout`
+- `GET /auth/google/login` / `POST /auth/logout`（**ブラウザからは `POST /api/auth/logout`**。上記BFFの節を参照）
 - `GET /api/conditions` / `PUT /api/conditions`
 - `GET /api/search?lat&lng&walk_max&ride_max&total_max&transfer&category&preview`
 - `GET /api/stores/{id}?lat&lng`
