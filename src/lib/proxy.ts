@@ -12,11 +12,30 @@
 import type { NextRequest } from "next/server";
 
 /**
+ * 中継先を正規化する。
+ *
+ * 2026-08-15、`API_ORIGIN` に `https://` を付けずに設定したため
+ * **本番の全リクエストが500になった**（Azureポータルの App Service「概要」に出る
+ * 「既定のドメイン」がスキーム無しの表記で、そこからコピーすると起きる）。
+ * 設定ミスで本番が落ちるのは割に合わないので、ここで吸収する。
+ *   - スキームが無ければ `https://` を補う
+ *   - 末尾のスラッシュを落とす（`.../` + `/api/...` で `//` になるのを防ぐ）
+ *
+ * ※ ローカルの `http://localhost:8000` は既定値・`.env.local` ともスキーム付きで書く。
+ *   スキーム無しで `localhost:8000` と書くと https 扱いになり繋がらないので注意。
+ */
+function normalizeOrigin(raw: string | undefined): string {
+  const value = (raw ?? "http://localhost:8000").trim();
+  const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  return withScheme.replace(/\/+$/, "");
+}
+
+/**
  * 中継先。★ NEXT_PUBLIC_ を付けないこと。
  * 付けるとビルド時にJSへ焼き込まれ、URLを隠すという目的そのものが失われる。
  * 本番は Azure Static Web Apps のアプリ設定、ローカルは .env.local で与える。
  */
-const API_ORIGIN = process.env.API_ORIGIN ?? "http://localhost:8000";
+const API_ORIGIN = normalizeOrigin(process.env.API_ORIGIN);
 
 /** ブラウザ → API へ引き継ぐリクエストヘッダ（これ以外は送らない） */
 const FORWARD_REQUEST_HEADERS = ["cookie", "content-type", "accept"] as const;
