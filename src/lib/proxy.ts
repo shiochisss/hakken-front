@@ -47,6 +47,30 @@ export function joinPath(segments: string[] | undefined): string {
 }
 
 /**
+ * 中継に失敗したときの応答。
+ *
+ * ここが無いと例外がそのまま外に出て **Azure が素の「HTTP ERROR 500」を返す**＝
+ * ブラウザからもログからも原因が分からない（2026-08-15 の本番障害がこれ）。
+ * 原因の切り分けに要る最小限だけを返す。**バックエンドのURLは含めない**
+ * （含めると隠す意味が無くなる。`cause.code` だけで十分切り分けられる）。
+ */
+function upstreamError(status: number, code: string, err: unknown): Response {
+  const cause = (err as { cause?: { code?: string } } | undefined)?.cause;
+  const body = JSON.stringify({
+    error: code,
+    // API_ORIGIN が未設定だと localhost:8000 へ繋ぎに行って ECONNREFUSED になる。
+    // 「設定漏れ」と「バックエンド側の障害」をこの1行で見分ける。
+    apiOriginConfigured: Boolean(process.env.API_ORIGIN),
+    detail: String((err as Error | undefined)?.message ?? err),
+    causeCode: cause?.code ?? null,
+  });
+  return new Response(body, {
+    status,
+    headers: { "content-type": "application/json", "cache-control": "no-store" },
+  });
+}
+
+/**
  * `targetPath` は先頭スラッシュ付きの、**バックエンド側の**パス（例 `/api/search`・`/auth/logout`）。
  * クエリ文字列は呼び出し元のものをそのまま引き継ぐ。
  */
@@ -63,24 +87,38 @@ export async function proxy(req: NextRequest, targetPath: string): Promise<Respo
   // multipart（写真アップロード）は arrayBuffer でそのまま素通しする。
   const hasBody = req.method !== "GET" && req.method !== "HEAD";
 
-  const res = await fetch(url, {
-    method: req.method,
-    headers,
-    body: hasBody ? await req.arrayBuffer() : undefined,
-    redirect: "manual", // 302 は自分で追わずブラウザへ返す（Google OAuth の往復に必須）
-    cache: "no-store",
-  });
-
-  const out = new Headers();
-  for (const name of FORWARD_RESPONSE_HEADERS) {
-    const value = res.headers.get(name);
-    if (value) out.set(name, value);
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: req.method,
+      headers,
+      body: hasBody ? await req.arrayBuffer() : undefined,
+      redirect: "manual", // 302 は自分で追わずブラウザへ返す（Google OAuth の往復に必須）
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[bff] upstream fetch failed:", targetPath, err);
+    return upstreamError(502, "bff_upstream_unreachable", err);
   }
-  out.set("cache-control", "no-store");
-  for (const cookie of readSetCookies(res)) out.append("set-cookie", cookie);
 
-  return new Response(NULL_BODY_STATUS.has(res.status) ? null : res.body, {
-    status: res.status,
-    headers: out,
-  });
+  try {
+    const out = new Headers();
+    for (const name of FORWARD_RESPONSE_HEADERS) {
+      const value = res.headers.get(name);
+      if (value) out.set(name, value);
+    }
+    out.set("cache-control", "no-store");
+    for (const cookie of readSetCookies(res)) out.append("set-cookie", cookie);
+
+    // ★ ストリーム（res.body）をそのまま返さず、いったんバッファに読み切る。
+    //   Azure Static Web Apps のマネージドバックエンドは Azure Functions 上で動いており、
+    //   Route Handler からストリームを返すと環境によっては応答を組み立てられず 500 になる。
+    //   本アプリのレスポンスは検索結果か写真1枚ぶんで、メモリ上の実害が無いため読み切る。
+    const body = NULL_BODY_STATUS.has(res.status) ? null : await res.arrayBuffer();
+
+    return new Response(body, { status: res.status, headers: out });
+  } catch (err) {
+    console.error("[bff] response relay failed:", targetPath, err);
+    return upstreamError(502, "bff_response_relay_failed", err);
+  }
 }
