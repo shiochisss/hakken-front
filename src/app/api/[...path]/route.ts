@@ -12,9 +12,12 @@ import { joinPath, proxy } from "@/lib/proxy";
 // 毎回サーバで実行する（静的化・キャッシュをさせない）
 export const dynamic = "force-dynamic";
 
-type Ctx = { params: { path: string[] } };
+type Ctx = { params: Promise<{ path: string[] }> };
 
-const handler = (req: NextRequest, ctx: Ctx) => proxy(req, `/api/${joinPath(ctx.params.path)}`);
+const handler = async (req: NextRequest, ctx: Ctx) => {
+  const { path } = await ctx.params;
+  return proxy(req, `/api/${joinPath(path)}`);
+};
 
 export const GET = handler;
 export const POST = handler;
