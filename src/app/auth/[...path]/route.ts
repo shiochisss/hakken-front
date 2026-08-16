@@ -15,6 +15,9 @@ import { joinPath, proxy } from "@/lib/proxy";
 
 export const dynamic = "force-dynamic";
 
-type Ctx = { params: { path: string[] } };
+type Ctx = { params: Promise<{ path: string[] }> };
 
-export const GET = (req: NextRequest, ctx: Ctx) => proxy(req, `/auth/${joinPath(ctx.params.path)}`);
+export const GET = async (req: NextRequest, ctx: Ctx) => {
+  const { path } = await ctx.params;
+  return proxy(req, `/auth/${joinPath(path)}`);
+};
